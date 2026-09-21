@@ -19,6 +19,8 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 NEW_ISSUE_URL = "https://github.com/ha-parcel-integrations/ha-seur/issues/new?template=unrecognised_status.yml"
+PICKUP_POINT_ISSUE_URL = "https://github.com/ha-parcel-integrations/ha-seur/issues/2"
+DELIVERY_WINDOW_ISSUE_URL = "https://github.com/ha-parcel-integrations/ha-seur/issues/3"
 _STATUS_MAP = {
     "SX010": ParcelStatus.REGISTERED,
     "SX001": ParcelStatus.IN_TRANSIT,
@@ -41,10 +43,16 @@ def _warn(code: str) -> None:
         )
 
 
-def _warn_payload_shape(kind: str, message: str) -> None:
+def _warn_payload_shape(kind: str, message: str, *args: Any) -> None:
     if kind not in _payload_shapes_logged:
         _payload_shapes_logged.add(kind)
-        _LOGGER.warning(message)
+        _LOGGER.warning(message, *args)
+
+
+def _key_types(value: dict[str, Any]) -> str:
+    return ", ".join(
+        f"{key}: {type(item).__name__}" for key, item in sorted(value.items())
+    )
 
 
 def map_parcel_status(code: str | None) -> ParcelStatus:
@@ -143,6 +151,22 @@ def normalize_parcel(
     delivered_at = (
         newest.get("fecha") if delivered and parse_iso(newest.get("fecha")) else None
     )
+    if raw.get("tipo_entrega") == "SHOP":
+        _warn_payload_shape(
+            "pickup_point",
+            "SEUR parcel for a pickup point seen; its status mapping is unconfirmed. "
+            "Please attach redacted diagnostics to %s",
+            PICKUP_POINT_ISSUE_URL,
+        )
+    delivery = raw.get("delivery")
+    if isinstance(delivery, dict) and delivery:
+        _warn_payload_shape(
+            "delivery",
+            "SEUR parcel carries unseen delivery details; the delivery window stays "
+            "empty. Please report these field names and types to %s: %s",
+            DELIVERY_WINDOW_ISSUE_URL,
+            _key_types(delivery),
+        )
     weight = raw.get("peso")
     if isinstance(weight, bool) or not isinstance(weight, (int, float)):
         weight = None

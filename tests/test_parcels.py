@@ -60,6 +60,20 @@ def test_delivered_and_pickup_are_conservative():
     assert pickup["pickup_point"] is None
 
 
+def test_pickup_point_and_delivery_details_ask_for_reports(caplog):
+    raw = shipment()
+    raw["tipo_entrega"] = "SHOP"
+    raw["delivery"] = {"fecha_prevista": "2026-09-22", "tramo": {"desde": "09:00"}}
+    for _ in range(2):
+        normalize_parcel(raw)
+    messages = [record.getMessage() for record in caplog.records]
+    assert sum("issues/2" in message for message in messages) == 1
+    delivery = [message for message in messages if "issues/3" in message]
+    assert len(delivery) == 1
+    assert "fecha_prevista: str, tramo: dict" in delivery[0]
+    assert "2026-09-22" not in delivery[0]
+
+
 def test_payload_shape_warnings_are_one_shot(caplog):
     raw = shipment()
     raw["situaciones"][1]["fecha"] = 1726909200
