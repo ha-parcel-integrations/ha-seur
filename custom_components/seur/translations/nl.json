@@ -1,0 +1,120 @@
+{
+  "title": "SEUR",
+  "config": {
+    "step": {
+      "user": {
+        "title": "SEUR instellen",
+        "description": "Meld je aan met het account dat je op de website of in de app van SEUR gebruikt. Je pakketten worden uit dat account gelezen.",
+        "data": {
+          "email": "E-mailadres",
+          "password": "Wachtwoord"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Aanmelding bij SEUR verlopen",
+        "description": "SEUR accepteert de opgeslagen gegevens niet meer. Voer ze opnieuw in voor {account}.",
+        "data": {
+          "email": "E-mailadres",
+          "password": "Wachtwoord"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "SEUR heeft deze inloggegevens geweigerd.",
+      "cannot_connect": "Kon SEUR niet bereiken. Probeer het opnieuw."
+    },
+    "abort": {
+      "already_configured": "Dat SEUR-account is al ingesteld.",
+      "reauth_successful": "SEUR is opnieuw geverifieerd.",
+      "wrong_account": "Deze gegevens horen bij een ander SEUR-account. Meld je aan met het account waarvoor deze integratie is ingesteld."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SEUR-opties",
+        "sections": {
+          "delivered": {
+            "name": "Bezorgde pakketten",
+            "data": {
+              "delivered_filter_type": "Filteren op",
+              "delivered_filter_amount": "Aantal"
+            },
+            "data_description": {
+              "delivered_filter_type": "Toon bezorgde pakketten van de laatste X dagen, of beperk tot de X meest recente.",
+              "delivered_filter_amount": "Aantal dagen of pakketten om te tonen."
+            }
+          },
+          "history": {
+            "name": "Pakketgeschiedenis",
+            "data": {
+              "include_history": "Statusgeschiedenis toevoegen"
+            },
+            "data_description": {
+              "include_history": "Voegt per pakket een geschiedenisattribuut toe met elke statusupdate (tijdstip, status, oorspronkelijke tekst). Standaard uit."
+            }
+          }
+        }
+      }
+    }
+  },
+  "selector": {
+    "delivered_filter_type": {
+      "options": {
+        "days": "Dagen",
+        "parcels": "Aantal pakketten"
+      }
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "parcel_registered": "Een pakket is geregistreerd",
+      "parcel_status_changed": "De status van een pakket is gewijzigd",
+      "parcel_delivered": "Een pakket is bezorgd",
+      "parcel_delivery_time_changed": "De verwachte bezorgtijd van een pakket is gewijzigd"
+    }
+  },
+  "entity": {
+    "button": {
+      "refresh": {
+        "name": "Verversen"
+      }
+    },
+    "calendar": {
+      "deliveries": {
+        "name": "Bezorgingen"
+      }
+    },
+    "sensor": {
+      "incoming_parcels": {
+        "name": "Inkomende pakketten",
+        "unit_of_measurement": "pakketten"
+      },
+      "outgoing_parcels": {
+        "name": "Uitgaande pakketten",
+        "unit_of_measurement": "pakketten"
+      },
+      "outgoing_delivered_parcels": {
+        "name": "Bezorgde uitgaande pakketten",
+        "unit_of_measurement": "pakketten"
+      },
+      "awaiting_pickup": {
+        "name": "Klaar voor afhalen",
+        "unit_of_measurement": "pakketten"
+      },
+      "next_delivery": {
+        "name": "Volgende bezorging"
+      },
+      "delivered_parcels": {
+        "name": "Bezorgde pakketten",
+        "unit_of_measurement": "pakketten"
+      },
+      "last_update": {
+        "name": "Laatste succesvolle update"
+      },
+      "parcel": {
+        "name": "Pakket {barcode}"
+      }
+    }
+  }
+}

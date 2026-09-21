@@ -1,0 +1,120 @@
+{
+  "title": "SEUR",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up SEUR",
+        "description": "Sign in with the account you use on the SEUR website or app. Your parcels are read from that account.",
+        "data": {
+          "email": "E-mail address",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "SEUR sign-in expired",
+        "description": "SEUR no longer accepts the stored credentials. Enter them again for {account}.",
+        "data": {
+          "email": "E-mail address",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "SEUR rejected these credentials.",
+      "cannot_connect": "Could not reach SEUR. Please try again."
+    },
+    "abort": {
+      "already_configured": "That SEUR account is already set up.",
+      "reauth_successful": "SEUR was reauthenticated successfully.",
+      "wrong_account": "Those credentials are for a different SEUR account. Sign in with the account this entry was set up for."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SEUR options",
+        "sections": {
+          "delivered": {
+            "name": "Delivered parcels",
+            "data": {
+              "delivered_filter_type": "Filter by",
+              "delivered_filter_amount": "Amount"
+            },
+            "data_description": {
+              "delivered_filter_type": "Show delivered parcels from the last X days, or limit to the X most recent.",
+              "delivered_filter_amount": "Number of days or parcels to show."
+            }
+          },
+          "history": {
+            "name": "Parcel history",
+            "data": {
+              "include_history": "Include status history"
+            },
+            "data_description": {
+              "include_history": "Add a per-parcel history attribute listing each status update (timestamp, status, original text). Off by default."
+            }
+          }
+        }
+      }
+    }
+  },
+  "selector": {
+    "delivered_filter_type": {
+      "options": {
+        "days": "Days",
+        "parcels": "Number of parcels"
+      }
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "parcel_registered": "A parcel was registered",
+      "parcel_status_changed": "A parcel's status changed",
+      "parcel_delivered": "A parcel was delivered",
+      "parcel_delivery_time_changed": "A parcel's expected delivery time changed"
+    }
+  },
+  "entity": {
+    "button": {
+      "refresh": {
+        "name": "Refresh"
+      }
+    },
+    "calendar": {
+      "deliveries": {
+        "name": "Deliveries"
+      }
+    },
+    "sensor": {
+      "incoming_parcels": {
+        "name": "Incoming parcels",
+        "unit_of_measurement": "parcels"
+      },
+      "outgoing_parcels": {
+        "name": "Outgoing parcels",
+        "unit_of_measurement": "parcels"
+      },
+      "outgoing_delivered_parcels": {
+        "name": "Delivered outgoing parcels",
+        "unit_of_measurement": "parcels"
+      },
+      "awaiting_pickup": {
+        "name": "Awaiting pickup",
+        "unit_of_measurement": "parcels"
+      },
+      "next_delivery": {
+        "name": "Next delivery"
+      },
+      "delivered_parcels": {
+        "name": "Delivered parcels",
+        "unit_of_measurement": "parcels"
+      },
+      "last_update": {
+        "name": "Last successful update"
+      },
+      "parcel": {
+        "name": "Parcel {barcode}"
+      }
+    }
+  }
+}

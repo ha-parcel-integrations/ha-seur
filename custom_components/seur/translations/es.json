@@ -1,0 +1,15 @@
+{
+  "title": "SEUR",
+  "config": {
+    "step": {
+      "user": {"title": "Configurar SEUR", "description": "Inicia sesión con la cuenta que usas en el sitio web o la aplicación de SEUR. Tus paquetes se leen de esa cuenta.", "data": {"email": "Dirección de correo electrónico", "password": "Contraseña"}},
+      "reauth_confirm": {"title": "Inicio de sesión de SEUR caducado", "description": "SEUR ya no acepta las credenciales guardadas. Introdúcelas de nuevo para {account}.", "data": {"email": "Dirección de correo electrónico", "password": "Contraseña"}}
+    },
+    "error": {"invalid_auth": "SEUR rechazó estas credenciales.", "cannot_connect": "No se pudo conectar con SEUR. Inténtalo de nuevo."},
+    "abort": {"already_configured": "Esta cuenta de SEUR ya está configurada.", "reauth_successful": "SEUR se ha autenticado de nuevo correctamente.", "wrong_account": "Estas credenciales pertenecen a otra cuenta de SEUR. Inicia sesión con la cuenta para la que se configuró esta integración."}
+  },
+  "options": {"step": {"init": {"title": "Opciones de SEUR", "sections": {"delivered": {"name": "Paquetes entregados", "data": {"delivered_filter_type": "Filtrar por", "delivered_filter_amount": "Cantidad"}, "data_description": {"delivered_filter_type": "Mostrar paquetes entregados de los últimos X días o limitar a los X más recientes.", "delivered_filter_amount": "Número de días o paquetes que se mostrarán."}}, "history": {"name": "Historial del paquete", "data": {"include_history": "Incluir historial de estados"}, "data_description": {"include_history": "Añade un atributo de historial por paquete con cada actualización de estado (marca de tiempo, estado y texto original). Desactivado de forma predeterminada."}}}}}},
+  "selector": {"delivered_filter_type": {"options": {"days": "Días", "parcels": "Número de paquetes"}}},
+  "device_automation": {"trigger_type": {"parcel_registered": "Se registró un paquete", "parcel_status_changed": "El estado de un paquete cambió", "parcel_delivered": "Se entregó un paquete", "parcel_delivery_time_changed": "La hora de entrega prevista de un paquete cambió"}},
+  "entity": {"button": {"refresh": {"name": "Actualizar"}}, "calendar": {"deliveries": {"name": "Entregas"}}, "sensor": {"incoming_parcels": {"name": "Paquetes entrantes", "unit_of_measurement": "paquetes"}, "outgoing_parcels": {"name": "Paquetes enviados", "unit_of_measurement": "paquetes"}, "outgoing_delivered_parcels": {"name": "Paquetes enviados entregados", "unit_of_measurement": "paquetes"}, "awaiting_pickup": {"name": "Pendientes de recogida", "unit_of_measurement": "paquetes"}, "next_delivery": {"name": "Próxima entrega"}, "delivered_parcels": {"name": "Paquetes entregados", "unit_of_measurement": "paquetes"}, "last_update": {"name": "Última actualización correcta"}, "parcel": {"name": "Paquete {barcode}"}}}
+}
