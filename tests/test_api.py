@@ -143,6 +143,11 @@ async def test_login_rejects_carrier_error_and_non_json():
     assert err.value.response_keys == ("codigo_error",)
 
 
+def test_api_error_str_includes_status_and_keys_for_default_log_level():
+    err = SEURApiError("shipment inbox failed", status_code=500, response_keys=("x",))
+    assert str(err) == "shipment inbox failed, status=500, keys=('x',)"
+
+
 async def test_json_parser_failure_is_safe_api_error():
     session = MagicMock()
     context = response(200, {})

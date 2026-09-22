@@ -31,6 +31,21 @@ class SEURApiError(Exception):
         self.response_keys = response_keys
         self.retry_after = retry_after
 
+    def __str__(self) -> str:
+        """Surface status/keys in the default log line, not just at DEBUG.
+
+        The coordinator lets a non-429 SEURApiError propagate to
+        DataUpdateCoordinator, which logs str(err) at its own level. Without
+        this, that log line is just "shipment inbox failed" with nothing to
+        diagnose from — response *values* stay out, only structure.
+        """
+        bits = [self.detail]
+        if self.status_code is not None:
+            bits.append(f"status={self.status_code}")
+        if self.response_keys is not None:
+            bits.append(f"keys={self.response_keys}")
+        return ", ".join(bits)
+
 
 class SEURAuthError(SEURApiError):
     """The configured credentials were rejected."""
