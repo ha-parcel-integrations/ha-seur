@@ -102,7 +102,7 @@ def test_delivered_sensor():
     assert sensor.extra_state_attributes["parcels"][0]["barcode"] == "D"
 
 
-def test_awaiting_pickup_requires_pickup_and_at_pickup_point():
+def test_awaiting_pickup_counts_every_parcel_at_pickup_point():
     coordinator = _coordinator(
         [
             _parcel("READY", status=ParcelStatus.AT_PICKUP_POINT, pickup=True),
@@ -111,8 +111,8 @@ def test_awaiting_pickup_requires_pickup_and_at_pickup_point():
         ]
     )
     sensor = SEURAwaitingPickupSensor(coordinator, _entry())
-    assert sensor.native_value == 1
-    assert sensor.extra_state_attributes["parcels"][0]["barcode"] == "READY"
+    assert sensor.native_value == 2
+    assert len(sensor.extra_state_attributes["parcels"]) == 2
 
 
 def test_last_update_sensor():
