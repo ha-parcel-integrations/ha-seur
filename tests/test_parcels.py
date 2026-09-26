@@ -18,6 +18,10 @@ def test_maps_all_observed_codes():
     assert map_parcel_status("SX010") is ParcelStatus.REGISTERED
     assert map_parcel_status("SX001") is ParcelStatus.IN_TRANSIT
     assert map_parcel_status("LI567") is ParcelStatus.IN_TRANSIT
+    assert map_parcel_status("LO001") is ParcelStatus.IN_TRANSIT
+    assert map_parcel_status("SW189") is ParcelStatus.IN_TRANSIT
+    assert map_parcel_status("LI569") is ParcelStatus.IN_TRANSIT
+    assert map_parcel_status("LI574") is ParcelStatus.AT_PICKUP_POINT
     assert map_parcel_status("LC003") is ParcelStatus.OUT_FOR_DELIVERY
     assert map_parcel_status("LL003") is ParcelStatus.DELIVERED
     assert map_parcel_status("NEW") is ParcelStatus.UNKNOWN
@@ -49,25 +53,40 @@ def test_party_name_falls_back_and_ignores_non_names():
     assert parcel["receiver"] is None
 
 
-def test_delivered_and_pickup_are_conservative():
+def test_delivered_and_pickup_point_parcels():
     delivered = normalize_parcel(shipment(DELIVERED_CODE, "LL003"))
     assert delivered["delivered"] is True
     assert delivered["delivered_at"] == "2026-09-21T09:00:00Z"
-    raw = shipment()
+    assert delivered["pickup"] is False
+    raw = shipment(status="LI574")
     raw["tipo_entrega"] = "SHOP"
+    raw["destinatario"] = {
+        "centro_seur": " Synthetic Shop ",
+        "email_contacto": "private@example.test",
+        "razon_social": None,
+    }
     pickup = normalize_parcel(raw)
-    assert pickup["pickup"] is False
-    assert pickup["pickup_point"] is None
+    assert pickup["status"] is ParcelStatus.AT_PICKUP_POINT
+    assert pickup["pickup"] is True
+    assert pickup["delivered"] is False
+    assert pickup["pickup_point"] == "Synthetic Shop"
+    assert pickup["receiver"] is None
+    for destinatario in (None, {"centro_seur": " "}, {"centro_seur": 7}):
+        raw["destinatario"] = destinatario
+        assert normalize_parcel(raw)["pickup_point"] is None
+    home = shipment()
+    home["destinatario"] = {"centro_seur": "Synthetic Shop"}
+    assert normalize_parcel(home)["pickup_point"] is None
 
 
-def test_pickup_point_and_delivery_details_ask_for_reports(caplog):
+def test_delivery_details_ask_for_reports(caplog):
     raw = shipment()
     raw["tipo_entrega"] = "SHOP"
     raw["delivery"] = {"fecha_prevista": "2026-09-22", "tramo": {"desde": "09:00"}}
     for _ in range(2):
         normalize_parcel(raw)
     messages = [record.getMessage() for record in caplog.records]
-    assert sum("issues/2" in message for message in messages) == 1
+    assert not any("issues/2" in message for message in messages)
     delivery = [message for message in messages if "issues/3" in message]
     assert len(delivery) == 1
     assert "fecha_prevista: str, tramo: dict" in delivery[0]

@@ -15,6 +15,7 @@ async def test_diagnostics_redact_seur_identifiers(hass):
     coordinator.data = [
         {
             "barcode": "SEUR-TEST-0001",
+            "pickup_point": "Synthetic Shop",
             "raw": {
                 "clave_envio": "SEUR-TEST-0001",
                 "delivery": {"email": "hidden@example.test"},
@@ -33,3 +34,4 @@ async def test_diagnostics_redact_seur_identifiers(hass):
     assert result["incoming"][0]["raw"]["delivery"] == "**REDACTED**"
     assert result["incoming"][0]["raw"]["receptor"] == "**REDACTED**"
     assert result["incoming"][0]["raw"]["c_exp_7"] == "**REDACTED**"
+    assert result["incoming"][0]["pickup_point"] == "**REDACTED**"

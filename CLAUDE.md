@@ -39,10 +39,11 @@ you act in one of these areas:
   status/code**, it needs an `awaiting_pickup` sensor — see *Parcel contract*
   in `CONVENTIONS.md`. Say "pickup point", not "ServicePoint"/"parcel
   shop"/"locker", for the generic concept. `ha-dhl-nl`, `ha-dpd`, `ha-gls`,
-  `ha-inpost` are reference implementations. `seur` ships the sensor with the
-  same `pickup` + `AT_PICKUP_POINT` gate, but nothing feeds it yet: `pickup`
-  is hard-wired `False` and no code maps to `AT_PICKUP_POINT`. Don't wire
-  `tipo_entrega` in until a real pickup-point payload shows its value.
+  `ha-inpost` are reference implementations. In `seur`, `LI574` maps to
+  `AT_PICKUP_POINT` and `pickup` is `tipo_entrega == "SHOP"`, both confirmed
+  by one real pickup-point parcel. `pickup_point` is
+  `destinatario.centro_seur`, the only field taken from `destinatario`: in
+  the same object sit the recipient's own email and phone.
 
 ## Carrier-specific notes
 
@@ -51,8 +52,8 @@ all other API failures remain retryable. Runtime-only authentication state and
 the account identifier are never stored in the config entry. The feed supplies
 received and sent packages separately, so outgoing sensors/events are derived
 from that envelope only. Weight and optional history are supported; ETA,
-addresses, URLs and pickup-point details deliberately remain `None` pending
-safe evidence. Unknown statuses and payload structures emit redacted warnings.
+addresses and URLs deliberately remain `None` pending safe evidence; the
+pickup point is its name only. Unknown statuses and payload structures emit redacted warnings.
 
 ## Options and reloads
 

@@ -20,6 +20,7 @@ TO_REDACT = {
     "sender",
     "receiver",
     "url",
+    "pickup_point",
     # carrier payload fields
     "trackingNumber",
     "recipient",

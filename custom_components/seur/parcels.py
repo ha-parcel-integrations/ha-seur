@@ -19,12 +19,16 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 NEW_ISSUE_URL = "https://github.com/ha-parcel-integrations/ha-seur/issues/new?template=unrecognised_status.yml"
-PICKUP_POINT_ISSUE_URL = "https://github.com/ha-parcel-integrations/ha-seur/issues/2"
 DELIVERY_WINDOW_ISSUE_URL = "https://github.com/ha-parcel-integrations/ha-seur/issues/3"
 _STATUS_MAP = {
     "SX010": ParcelStatus.REGISTERED,
     "SX001": ParcelStatus.IN_TRANSIT,
     "LI567": ParcelStatus.IN_TRANSIT,
+    "LO001": ParcelStatus.IN_TRANSIT,
+    "SW189": ParcelStatus.IN_TRANSIT,
+    # ENTREGA EN TIENDA: announced for the pickup point, not yet collectable.
+    "LI569": ParcelStatus.IN_TRANSIT,
+    "LI574": ParcelStatus.AT_PICKUP_POINT,
     "LC003": ParcelStatus.OUT_FOR_DELIVERY,
     "LL003": ParcelStatus.DELIVERED,
 }
@@ -151,13 +155,6 @@ def normalize_parcel(
     delivered_at = (
         newest.get("fecha") if delivered and parse_iso(newest.get("fecha")) else None
     )
-    if raw.get("tipo_entrega") == "SHOP":
-        _warn_payload_shape(
-            "pickup_point",
-            "SEUR parcel for a pickup point seen; its status mapping is unconfirmed. "
-            "Please attach redacted diagnostics to %s",
-            PICKUP_POINT_ISSUE_URL,
-        )
     delivery = raw.get("delivery")
     if isinstance(delivery, dict) and delivery:
         _warn_payload_shape(
@@ -167,6 +164,7 @@ def normalize_parcel(
             DELIVERY_WINDOW_ISSUE_URL,
             _key_types(delivery),
         )
+    pickup = raw.get("tipo_entrega") == "SHOP"
     weight = raw.get("peso")
     if isinstance(weight, bool) or not isinstance(weight, (int, float)):
         weight = None
@@ -181,9 +179,8 @@ def normalize_parcel(
         "delivered_at": delivered_at,
         "planned_from": None,
         "planned_to": None,
-        # No observed payload confirms how SEUR marks a pickup-point delivery.
-        "pickup": False,
-        "pickup_point": None,
+        "pickup": pickup,
+        "pickup_point": _pickup_point(raw.get("destinatario")) if pickup else None,
         "url": None,
         "weight": float(weight) if weight is not None else None,
         "dimensions": None,
@@ -193,6 +190,14 @@ def normalize_parcel(
         # before it can be shared outside the user's installation.
         "raw": raw,
     }
+
+
+def _pickup_point(party: Any) -> str | None:
+    """Return the pickup point's name; the rest of ``destinatario`` is personal."""
+    if not isinstance(party, dict):
+        return None
+    name = party.get("centro_seur")
+    return name.strip() or None if isinstance(name, str) else None
 
 
 def _party_name(party: Any) -> str | None:

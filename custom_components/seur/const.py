@@ -36,9 +36,9 @@ KNOWN_CAPABILITIES = frozenset(
     {"weight", "dimensions", "delivery_window", "pickup_point", "url", "history"}
 )
 
-# Only confirmed safe values are advertised. Pickup point details and ETA are
-# intentionally unavailable until a non-sensitive live payload establishes them.
-CAPABILITIES = frozenset({"weight", "history"})
+# Only confirmed safe values are advertised. ETA stays unavailable until a
+# live payload establishes it.
+CAPABILITIES = frozenset({"weight", "pickup_point", "history"})
 
 # If this carrier ever grows a second backend with a genuinely different
 # payload shape (a country-specific API, not just a config option), replace
