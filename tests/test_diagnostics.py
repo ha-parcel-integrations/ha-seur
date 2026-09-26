@@ -18,6 +18,8 @@ async def test_diagnostics_redact_seur_identifiers(hass):
             "raw": {
                 "clave_envio": "SEUR-TEST-0001",
                 "delivery": {"email": "hidden@example.test"},
+                "receptor": "Synthetic Receiver",
+                "c_exp_7": "1234567",
             },
         }
     ]
@@ -29,3 +31,5 @@ async def test_diagnostics_redact_seur_identifiers(hass):
     assert result["incoming"][0]["barcode"] == "**REDACTED**"
     assert result["incoming"][0]["raw"]["clave_envio"] == "**REDACTED**"
     assert result["incoming"][0]["raw"]["delivery"] == "**REDACTED**"
+    assert result["incoming"][0]["raw"]["receptor"] == "**REDACTED**"
+    assert result["incoming"][0]["raw"]["c_exp_7"] == "**REDACTED**"

@@ -40,6 +40,8 @@ TO_REDACT = {
     "uuid",
     "clave_envio",
     "identificador_busqueda",
+    "c_exp_7",
+    "receptor",
     "ecbs",
     "alias",
     "referenciaCliente",
