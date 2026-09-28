@@ -59,6 +59,26 @@ async def test_setup_failure_closes_session(hass, error):
     close.assert_awaited()
 
 
+async def test_login_retry_reason_carries_the_status(hass):
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title=EMAIL,
+        unique_id=EMAIL,
+        data={"email": EMAIL, "password": "synthetic"},
+    )
+    entry.add_to_hass(hass)
+    with patch(
+        "custom_components.seur.api.SEURApiClient.async_login",
+        new=AsyncMock(
+            side_effect=SEURApiError("unexpected token response", status_code=503)
+        ),
+    ):
+        assert not await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+    assert entry.state is ConfigEntryState.SETUP_RETRY
+    assert entry.reason == "SEUR login failed: unexpected token response, status=503"
+
+
 async def test_platform_forward_failure_closes_session(hass):
     entry = MockConfigEntry(
         domain=DOMAIN,

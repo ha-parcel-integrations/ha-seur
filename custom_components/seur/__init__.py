@@ -57,7 +57,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SEURConfigEntry) -> bool
     except (SEURApiError, aiohttp.ClientError) as err:
         # Non-auth failure (typically a 5xx outage) — retry with backoff.
         await session.close()
-        raise ConfigEntryNotReady("SEUR login failed") from err
+        raise ConfigEntryNotReady(f"SEUR login failed: {err}") from err
 
     coordinator = SEURCoordinator(hass, client, entry)
 
