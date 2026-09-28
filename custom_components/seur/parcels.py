@@ -42,8 +42,10 @@ def _warn(code: str) -> None:
     if code not in _warned:
         _warned.add(code)
         _LOGGER.warning(
-            "Unrecognised SEUR status; diagnostics redact values. Report code and field types: %s",
+            "Unrecognised SEUR status — help us map it. Open an issue "
+            "and paste this line: %s\n  status=%s → reported as 'unknown'",
             NEW_ISSUE_URL,
+            code,
         )
 
 

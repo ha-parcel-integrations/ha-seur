@@ -79,6 +79,14 @@ def test_delivered_and_pickup_point_parcels():
     assert normalize_parcel(home)["pickup_point"] is None
 
 
+def test_unmapped_status_warning_names_the_code_once(caplog):
+    for _ in range(2):
+        assert map_parcel_status("ZZ999") is ParcelStatus.UNKNOWN
+    messages = [r.getMessage() for r in caplog.records if "ZZ999" in r.getMessage()]
+    assert len(messages) == 1
+    assert "status=ZZ999" in messages[0]
+
+
 def test_delivery_details_ask_for_reports(caplog):
     raw = shipment()
     raw["tipo_entrega"] = "SHOP"

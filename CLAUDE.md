@@ -53,7 +53,7 @@ the account identifier are never stored in the config entry. The feed supplies
 received and sent packages separately, so outgoing sensors/events are derived
 from that envelope only. Weight and optional history are supported; ETA,
 addresses and URLs deliberately remain `None` pending safe evidence; the
-pickup point is its name only. Unknown statuses and payload structures emit redacted warnings.
+pickup point is its name only. Unknown statuses warn with the SEUR code; unknown payload structures emit redacted warnings (field types only).
 
 ## Options and reloads
 
