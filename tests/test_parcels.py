@@ -24,6 +24,7 @@ def test_maps_all_observed_codes():
     assert map_parcel_status("LI574") is ParcelStatus.AT_PICKUP_POINT
     assert map_parcel_status("LC003") is ParcelStatus.OUT_FOR_DELIVERY
     assert map_parcel_status("LL003") is ParcelStatus.DELIVERED
+    assert map_parcel_status("LL010") is ParcelStatus.DELIVERED
     assert map_parcel_status("NEW") is ParcelStatus.UNKNOWN
 
 

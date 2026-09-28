@@ -40,8 +40,8 @@ you act in one of these areas:
   in `CONVENTIONS.md`. Say "pickup point", not "ServicePoint"/"parcel
   shop"/"locker", for the generic concept. `ha-dhl-nl`, `ha-dpd`, `ha-gls`,
   `ha-inpost` are reference implementations. In `seur`, `LI574` maps to
-  `AT_PICKUP_POINT` and `pickup` is `tipo_entrega == "SHOP"`, both confirmed
-  by one real pickup-point parcel. `pickup_point` is
+  `AT_PICKUP_POINT`, collection there is `LL010` → `DELIVERED`, and `pickup`
+  is `tipo_entrega == "SHOP"`, all confirmed by one real pickup-point parcel. `pickup_point` is
   `destinatario.centro_seur`, the only field taken from `destinatario`: in
   the same object sit the recipient's own email and phone.
 

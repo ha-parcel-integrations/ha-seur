@@ -31,6 +31,7 @@ _STATUS_MAP = {
     "LI574": ParcelStatus.AT_PICKUP_POINT,
     "LC003": ParcelStatus.OUT_FOR_DELIVERY,
     "LL003": ParcelStatus.DELIVERED,
+    "LL010": ParcelStatus.DELIVERED,
 }
 _warned: set[str] = set()
 # Compatibility name used by the scaffold's test isolation fixture.
