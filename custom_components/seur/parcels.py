@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
 import logging
-from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -102,10 +102,10 @@ def parse_iso(value: Any) -> datetime | None:
     if not isinstance(value, str) or not value:
         return None
     try:
-        result = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        result = datetime.fromisoformat(value)
     except ValueError:
         return None
-    return result if result.tzinfo else result.replace(tzinfo=timezone.utc)
+    return result if result.tzinfo else result.replace(tzinfo=UTC)
 
 
 def build_history(
@@ -239,7 +239,7 @@ def apply_delivered_filter(parcels: list[dict], entry: ConfigEntry) -> list[dict
         == "parcels"
     ):
         return parcels[:amount]
-    cutoff = datetime.now(timezone.utc) - timedelta(days=amount)
+    cutoff = datetime.now(UTC) - timedelta(days=amount)
     return [
         parcel
         for parcel in parcels

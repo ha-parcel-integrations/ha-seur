@@ -1,12 +1,12 @@
 """Tests for received/sent account coordination and events."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock
 
-import pytest
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import UpdateFailed
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.seur.api import SEURApiError, SEURAuthError
@@ -117,7 +117,7 @@ async def test_event_helpers_cover_new_and_unchanged_parcels(hass):
 
 
 def test_polling_helpers_cover_quiet_and_hot_tiers():
-    now = datetime(2026, 9, 21, 1, tzinfo=timezone.utc)
+    now = datetime(2026, 9, 21, 1, tzinfo=UTC)
     assert _in_quiet_window(now)
     assert _next_anchor(now).hour == 6
     assert _next_update_interval(now, MID_INTERVAL_MINUTES, "entry").total_seconds() > 0
@@ -148,19 +148,19 @@ async def test_rate_limit_uses_update_failed_backoff(hass):
 
 
 def test_polling_helpers_cover_anchors_and_planned_windows():
-    evening = datetime(2026, 9, 21, 22, tzinfo=timezone.utc)
-    assert _next_anchor(evening) == datetime(2026, 9, 22, 0, tzinfo=timezone.utc)
+    evening = datetime(2026, 9, 21, 22, tzinfo=UTC)
+    assert _next_anchor(evening) == datetime(2026, 9, 22, 0, tzinfo=UTC)
     stagger = _stagger_minutes("entry")
-    late = datetime(2026, 9, 21, 23, 59 - stagger, tzinfo=timezone.utc)
+    late = datetime(2026, 9, 21, 23, 59 - stagger, tzinfo=UTC)
     assert late + _next_update_interval(late, MID_INTERVAL_MINUTES, "entry") == (
-        datetime(2026, 9, 22, 0, tzinfo=timezone.utc)
+        datetime(2026, 9, 22, 0, tzinfo=UTC)
     )
     soon = {
         "status": ParcelStatus.OUT_FOR_DELIVERY,
         "planned_from": "2026-09-21T13:00:00+00:00",
     }
     later = {**soon, "planned_from": "2026-09-22T13:00:00+00:00"}
-    noon = datetime(2026, 9, 21, 12, tzinfo=timezone.utc)
+    noon = datetime(2026, 9, 21, 12, tzinfo=UTC)
     assert _hottest_tier_minutes([soon], noon) == HOT_INTERVAL_MINUTES
     assert _hottest_tier_minutes([later], noon) == MID_INTERVAL_MINUTES
 

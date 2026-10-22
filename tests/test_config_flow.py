@@ -3,15 +3,12 @@
 from unittest.mock import AsyncMock, patch
 
 import aiohttp
-import pytest
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.seur.api import (
-    SEURApiError,
-    SEURAuthError,
-)
+from custom_components.seur.api import SEURApiError, SEURAuthError
 from custom_components.seur.const import (
     CONF_DELIVERED_FILTER_AMOUNT,
     CONF_DELIVERED_FILTER_TYPE,
@@ -62,7 +59,7 @@ async def test_user_flow_creates_entry(hass):
 
 
 @pytest.mark.parametrize(
-    "error,expected",
+    ("error", "expected"),
     [
         (SEURAuthError("HTTP 401"), "invalid_auth"),
         (SEURApiError("HTTP 500"), "cannot_connect"),

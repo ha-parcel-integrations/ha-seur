@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import logging
 from datetime import datetime
+import logging
 from typing import Any
 
 from homeassistant.components.sensor import (
@@ -81,8 +81,10 @@ async def async_setup_entry(
             SEURAwaitingPickupSensor(coordinator, entry),
         ]
     )
-    for parcel in coordinator.data or []:
-        entities.append(SEURParcelSensor(coordinator, entry, parcel.get("barcode", "")))
+    entities.extend(
+        SEURParcelSensor(coordinator, entry, parcel.get("barcode", ""))
+        for parcel in coordinator.data or []
+    )
     entities.append(SEURNextDeliverySensor(coordinator, entry))
     entities.append(SEURDeliveredParcelsSensor(coordinator, entry))
     entities.append(SEURLastUpdateSensor(coordinator, entry))

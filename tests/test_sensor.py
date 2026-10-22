@@ -1,6 +1,6 @@
 """Tests for SEUR sensor property logic."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import MagicMock
 
 from custom_components.seur.const import ParcelStatus
@@ -72,7 +72,7 @@ def test_next_delivery_picks_earliest():
         ]
     )
     sensor = SEURNextDeliverySensor(coordinator, _entry())
-    assert sensor.native_value == datetime(2026, 5, 1, 10, 0, tzinfo=timezone.utc)
+    assert sensor.native_value == datetime(2026, 5, 1, 10, 0, tzinfo=UTC)
     assert sensor.extra_state_attributes["barcode"] == "B"
 
 
@@ -117,7 +117,7 @@ def test_awaiting_pickup_counts_every_parcel_at_pickup_point():
 
 def test_last_update_sensor():
     coordinator = _coordinator([])
-    moment = datetime(2026, 6, 30, 12, 0, tzinfo=timezone.utc)
+    moment = datetime(2026, 6, 30, 12, 0, tzinfo=UTC)
     coordinator.last_success_time = moment
     sensor = SEURLastUpdateSensor(coordinator, _entry())
     assert sensor.native_value == moment

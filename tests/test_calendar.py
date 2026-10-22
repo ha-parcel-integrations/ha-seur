@@ -1,6 +1,6 @@
 """Tests for the SEUR deliveries calendar."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import MagicMock
 
 from custom_components.seur.calendar import SEURDeliveriesCalendar
@@ -56,7 +56,7 @@ def test_event_none_when_no_planned():
 def test_moment_gets_one_hour_duration():
     cal = _cal([_parcel("A", planned_from="2099-01-01T10:00:00Z")])
     events = cal._events()
-    assert events[0].end == datetime(2099, 1, 1, 11, 0, tzinfo=timezone.utc)
+    assert events[0].end == datetime(2099, 1, 1, 11, 0, tzinfo=UTC)
 
 
 def test_interval_uses_window():
@@ -69,7 +69,7 @@ def test_interval_uses_window():
             )
         ]
     )
-    assert cal._events()[0].end == datetime(2099, 1, 1, 12, 0, tzinfo=timezone.utc)
+    assert cal._events()[0].end == datetime(2099, 1, 1, 12, 0, tzinfo=UTC)
 
 
 def test_pickup_sets_location():
@@ -88,7 +88,7 @@ def test_pickup_sets_location():
 
 def test_naive_planned_from_treated_as_utc():
     cal = _cal([_parcel("A", planned_from="2099-01-01T10:00:00")])  # no tz
-    assert cal._events()[0].start == datetime(2099, 1, 1, 10, 0, tzinfo=timezone.utc)
+    assert cal._events()[0].start == datetime(2099, 1, 1, 10, 0, tzinfo=UTC)
 
 
 def test_unparseable_planned_from_skipped():
@@ -102,7 +102,7 @@ async def test_get_events_filters_by_range():
             _parcel("FUTURE", planned_from="2099-01-01T10:00:00Z"),
         ]
     )
-    start = datetime(2098, 1, 1, tzinfo=timezone.utc)
-    end = datetime(2100, 1, 1, tzinfo=timezone.utc)
+    start = datetime(2098, 1, 1, tzinfo=UTC)
+    end = datetime(2100, 1, 1, tzinfo=UTC)
     events = await cal.async_get_events(MagicMock(), start, end)
     assert {e.uid for e in events} == {"FUTURE"}
