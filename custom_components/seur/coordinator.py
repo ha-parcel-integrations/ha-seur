@@ -105,12 +105,14 @@ def _next_update_interval(now: datetime, tier_minutes: int, entry_id: str) -> ti
     return candidate - now
 
 
-class SEURCoordinator(DataUpdateCoordinator[dict[str, list[dict]]]):
+class SEURCoordinator(DataUpdateCoordinator[list[dict]]):
     """Polls the account's parcel list and publishes the canonical lists.
 
     ``coordinator.data`` is the active (not-yet-delivered) parcels,
     ``self.delivered`` the rest.
     """
+
+    config_entry: ConfigEntry
 
     def __init__(
         self,

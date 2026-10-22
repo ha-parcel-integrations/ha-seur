@@ -87,7 +87,7 @@ def format_dimensions(
     length: float | None, width: float | None, height: float | None
 ) -> dict[str, Any] | None:
     """SEUR supplies no dimensions; retain suite helper compatibility."""
-    if None in (length, width, height):
+    if length is None or width is None or height is None:
         return None
     return {
         "length": length,
@@ -220,7 +220,7 @@ def sort_parcels_by_ts(
     """Sort dated parcels while retaining invalid dates at the end."""
     dated = [(parse_iso(parcel.get(key)), parcel) for parcel in parcels]
     valid = sorted(
-        (item for item in dated if item[0] is not None),
+        ((stamp, parcel) for stamp, parcel in dated if stamp is not None),
         key=lambda item: item[0],
         reverse=descending,
     )
