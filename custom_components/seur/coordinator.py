@@ -191,11 +191,25 @@ class SEURCoordinator(DataUpdateCoordinator[list[dict]]):
         )
 
     async def _async_update_data(self) -> list[dict]:
+        try:
+            return await self._async_poll()
+        except Exception:
+            # The base class keeps the last interval after a failure, which
+            # after an overnight poll is the whole quiet window.
+            now = dt_util.now()
+            self.update_interval = _next_update_interval(
+                now,
+                _hottest_tier_minutes((self.data or []) + self.outgoing, now),
+                self.config_entry.entry_id,
+            )
+            raise
+
+    async def _async_poll(self) -> list[dict]:
         """Fetch the account's parcels and split into active vs delivered.
 
         ``aiohttp.ClientError`` and a non-429 ``SEURApiError`` are
         deliberately not caught — ``DataUpdateCoordinator`` turns those into
-        ``UpdateFailed`` with backoff on its own. An expired session needs
+        a failed update and the wrapper above reschedules it. An expired session needs
         special handling, because retrying it forever would never recover; a
         429 needs its own handling too, for the Section 3 backoff.
         """

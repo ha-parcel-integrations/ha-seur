@@ -1,7 +1,7 @@
 """Tests for received/sent account coordination and events."""
 
-from datetime import UTC, datetime
-from unittest.mock import AsyncMock
+from datetime import UTC, datetime, timedelta
+from unittest.mock import AsyncMock, patch
 
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers import device_registry as dr
@@ -14,6 +14,7 @@ from custom_components.seur.const import (
     DOMAIN,
     HOT_INTERVAL_MINUTES,
     MID_INTERVAL_MINUTES,
+    STAGGER_MINUTES,
     ParcelStatus,
 )
 from custom_components.seur.coordinator import (
@@ -228,3 +229,23 @@ async def test_status_and_delivery_time_changes_fire_events(hass):
         f"{DOMAIN}_parcel_delivery_time_changed",
         f"{DOMAIN}_parcel_status_changed",
     ]
+
+
+async def test_failed_poll_drops_the_overnight_interval(hass):
+    config = entry()
+    config.add_to_hass(hass)
+    coordinator = SEURCoordinator(hass, AsyncMock(), config)
+    coordinator.update_interval = timedelta(hours=5, minutes=40)
+
+    noon = datetime(2026, 1, 15, 12, tzinfo=UTC)
+    with (
+        patch.object(coordinator, "_async_poll", side_effect=TimeoutError),
+        patch("custom_components.seur.coordinator.dt_util.now", return_value=noon),
+        pytest.raises(TimeoutError),
+    ):
+        await coordinator._async_update_data()
+
+    assert coordinator.update_interval is not None
+    assert coordinator.update_interval <= timedelta(
+        minutes=MID_INTERVAL_MINUTES + STAGGER_MINUTES
+    )
