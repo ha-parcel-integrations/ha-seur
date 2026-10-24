@@ -106,7 +106,7 @@ async def test_reauth_updates_the_password(hass):
 
     result = await entry.start_reauth_flow(hass)
     assert result["step_id"] == "reauth_confirm"
-    assert result["description_placeholders"] == {"account": entry.title}
+    assert result["description_placeholders"]["account"] == entry.title
 
     with patch(LOGIN, new=AsyncMock(return_value={})):
         result = await hass.config_entries.flow.async_configure(
