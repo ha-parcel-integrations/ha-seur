@@ -245,22 +245,24 @@ class SEURCoordinator(DataUpdateCoordinator[list[dict]]):
         outgoing_active = [parcel for parcel in outgoing if not parcel["delivered"]]
         outgoing_delivered = [parcel for parcel in outgoing if parcel["delivered"]]
 
-        self.delivered = apply_delivered_filter(
-            sort_parcels_by_ts(delivered, "delivered_at", descending=True),
-            self.config_entry,
+        delivered_sorted = sort_parcels_by_ts(
+            delivered, "delivered_at", descending=True
         )
+        self.delivered = apply_delivered_filter(delivered_sorted, self.config_entry)
         normalized_active = sort_parcels_by_ts(active, "planned_from")
         self.outgoing = sort_parcels_by_ts(outgoing_active, "planned_from")
+        delivered_outgoing_sorted = sort_parcels_by_ts(
+            outgoing_delivered, "delivered_at", descending=True
+        )
         self.delivered_outgoing = apply_delivered_filter(
-            sort_parcels_by_ts(outgoing_delivered, "delivered_at", descending=True),
-            self.config_entry,
+            delivered_outgoing_sorted, self.config_entry
         )
 
-        # Incoming = active + delivered, combined so the transition to
-        # delivered is visible in one set.
-        incoming = normalized_active + self.delivered
+        # Events and remembered state cover every parcel; the retention option
+        # only limits what the delivered sensor shows.
+        incoming = normalized_active + delivered_sorted
         self._fire_change_events(incoming)
-        outgoing_all = self.outgoing + self.delivered_outgoing
+        outgoing_all = self.outgoing + delivered_outgoing_sorted
         self._fire_outgoing_change_events(outgoing_all)
         self._known_state = {
             parcel["barcode"]: parcel["status"]

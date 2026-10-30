@@ -249,3 +249,42 @@ async def test_failed_poll_drops_the_overnight_interval(hass):
     assert coordinator.update_interval <= timedelta(
         minutes=MID_INTERVAL_MINUTES + STAGGER_MINUTES
     )
+
+
+async def test_a_parcel_the_delivered_list_leaves_out_still_fires_delivered(hass):
+    """The retention option limits the delivered sensor, never the events."""
+    config = entry()
+    config.add_to_hass(hass)
+    hass.config_entries.async_update_entry(
+        config, options={**config.options, "delivered_filter_amount": 1}
+    )
+    client = AsyncMock()
+    coordinator = SEURCoordinator(hass, client, config)
+    delivered = []
+    hass.bus.async_listen(
+        f"{DOMAIN}_parcel_delivered", lambda event: delivered.append(event)
+    )
+
+    client.async_get_parcels.return_value = {
+        "incoming": [
+            shipment("SEUR-TEST-A", "SX001"),
+            shipment("SEUR-TEST-B", "SX001"),
+        ],
+        "outgoing": [],
+    }
+    await coordinator._async_update_data()
+    client.async_get_parcels.return_value = {
+        "incoming": [
+            shipment("SEUR-TEST-A", "LL003"),
+            shipment("SEUR-TEST-B", "LL003"),
+        ],
+        "outgoing": [],
+    }
+    await coordinator._async_update_data()
+    await hass.async_block_till_done()
+
+    assert sorted(e.data["barcode"] for e in delivered) == [
+        "SEUR-TEST-A",
+        "SEUR-TEST-B",
+    ]
+    assert len(coordinator.delivered) == 1
