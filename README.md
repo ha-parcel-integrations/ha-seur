@@ -115,6 +115,7 @@ Standard HA removal applies: **Settings → Devices & Services → SEUR → ⋮ 
 | `sensor.seur_parcel_<code>` | One per active incoming parcel; state is the canonical status and attributes carry the normalised parcel |
 | `sensor.seur_next_delivery` | Present but empty until SEUR supplies a confirmed delivery time |
 | `sensor.seur_delivered_parcels` | Recently delivered incoming packages (see the retention option) |
+| `calendar.seur_deliveries` | Read-only calendar of expected deliveries, no extra API calls |
 | `sensor.seur_last_successful_update` | Diagnostic: when SEUR was last polled successfully |
 
 A delivered incoming parcel moves from its per-parcel sensor to the delivered summary automatically. Outgoing parcels are represented by summary sensors only.
@@ -174,7 +175,7 @@ logger:
 ## Troubleshooting
 
 - **A parcel shows `unknown`** — SEUR returned a status code that is not mapped yet. It remains visible and its carrier code is available as `raw_status`.
-- **A status logs "Unrecognised SEUR status"** — please [open an issue](https://github.com/ha-parcel-integrations/ha-seur/issues/new) with the logged line so the mapping can be extended.
+- **A status logs "Unrecognised SEUR status"** — please [open an issue](https://github.com/ha-parcel-integrations/ha-seur/issues/new?template=unrecognised_status.yml) with the logged line so the mapping can be extended.
 
 ## Related integrations
 
