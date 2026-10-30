@@ -11,7 +11,7 @@ from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
-    OptionsFlow,
+    OptionsFlowWithReload,
 )
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.core import callback
@@ -150,7 +150,7 @@ class SEURConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
 
-class SEUROptionsFlowHandler(OptionsFlow):
+class SEUROptionsFlowHandler(OptionsFlowWithReload):
     """Manage delivered retention, history and polling in one sectioned form."""
 
     async def async_step_init(
@@ -160,10 +160,8 @@ class SEUROptionsFlowHandler(OptionsFlow):
         if user_input is not None:
             delivered = user_input["delivered"]
             history = user_input["history"]
-            # Reload so a changed history/delivered-retention setting takes
-            # effect immediately. No update listener is registered —
-            # combining the two is deprecated.
-            self.hass.config_entries.async_schedule_reload(self.config_entry.entry_id)
+            # OptionsFlowWithReload reloads once the new options are saved; a
+            # reload scheduled here would start before that, on the old ones.
             return self.async_create_entry(
                 title="",
                 data={

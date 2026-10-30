@@ -68,9 +68,11 @@ decisions. Changes apply without a restart. Two models, **do not mix them**:
   changes live: an update listener calls `async_request_refresh()`, so
   added/removed parcel sensors appear immediately (this is also the resume
   path after polling has fully suspended — see "Dynamic polling" below).
-- **Account-based carriers** call `async_schedule_reload` on submit and register
-  **no** update listener. Combining a listener with a reload-on-update flow is
-  deprecated, an error in HA 2026.12+.
+- **Account-based carriers** make the options flow an `OptionsFlowWithReload`
+  and register **no** update listener (the two may not be combined). Never call
+  `async_schedule_reload` from the submit instead: that reload starts before the
+  new options are saved, so anything read from `entry.options` at setup keeps
+  the old value.
 
 ## Auth models
 
