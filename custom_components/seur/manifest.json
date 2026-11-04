@@ -1,6 +1,7 @@
 {
   "domain": "seur",
   "name": "SEUR",
+  "categories": ["productivity_information"],
   "codeowners": [
     "@peter-mdf"
   ],
