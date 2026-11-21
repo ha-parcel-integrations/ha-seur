@@ -35,15 +35,25 @@ you act in one of these areas:
   summary+diagnostic sensors. Add a new non-parcel sensor's unique_id to the set.
 - **Per-parcel sensors are removed by the summary sensor** via
   `entity_registry.async_remove` (self-removal races and leaves ghosts).
-- **If this carrier can reach `ParcelStatus.AT_PICKUP_POINT` from a real raw
-  status/code**, it needs an `awaiting_pickup` sensor — see *Parcel contract*
-  in `CONVENTIONS.md`. Say "pickup point", not "ServicePoint"/"parcel
-  shop"/"locker", for the generic concept. `ha-dhl-nl`, `ha-dpd`, `ha-gls`,
-  `ha-inpost` are reference implementations. In `seur`, `LI574` maps to
-  `AT_PICKUP_POINT`, collection there is `LL010` → `DELIVERED`, and `pickup`
-  is `tipo_entrega == "SHOP"`, all confirmed by one real pickup-point parcel. `pickup_point` is
-  `destinatario.centro_seur`, the only field taken from `destinatario`: in
-  the same object sit the recipient's own email and phone.
+- **The pickup-point summaries are a pair.** A carrier that can deliver to a
+  pickup point or locker exposes both `en_route_to_pickup_point` and
+  `awaiting_pickup`, even before a real parcel has shown the status or flag
+  (they read 0 until then; record it in `PENDING_*`). A carrier without pickup
+  points exposes neither and keeps `pickup` constantly False.
+  See *Parcel contract* in `CONVENTIONS.md`. Say "pickup point", not
+  "ServicePoint"/"parcel shop"/"locker", for the generic concept; the
+  example carrier demonstrates both canonical sensors.
+  In `seur`, `LI574` maps to `AT_PICKUP_POINT`, collection there is `LL010` →
+  `DELIVERED`, and `pickup` is `tipo_entrega == "SHOP"`, all confirmed by one
+  real pickup-point parcel. `pickup_point` is `destinatario.centro_seur`, the
+  only field taken from `destinatario`: in the same object sit the recipient's
+  own email and phone. `pickup` also stays true after collection (an `LI574`
+  event anywhere in the history). Both pickup sensors exist,
+  `en_route_to_pickup_point` included. Still unconfirmed on a real parcel:
+  whether `tipo_entrega` is already `SHOP` while the parcel is in transit,
+  which is the only thing that fills `en_route_to_pickup_point` before the
+  parcel reaches the point. SEUR gives no delivery window yet; the window
+  helpers are wired in and stay empty.
 
 ## Carrier-specific notes
 

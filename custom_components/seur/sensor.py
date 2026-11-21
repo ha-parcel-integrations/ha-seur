@@ -17,6 +17,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 
 from . import SEURConfigEntry
 from .const import DOMAIN, ParcelStatus
@@ -58,6 +59,7 @@ async def async_setup_entry(
         f"{entry_id}_outgoing_parcels",
         f"{entry_id}_outgoing_delivered_parcels",
         f"{entry_id}_awaiting_pickup",
+        f"{entry_id}_en_route_to_pickup_point",
     }
     for entity_entry in er.async_entries_for_config_entry(registry, entry_id):
         if (
@@ -79,6 +81,7 @@ async def async_setup_entry(
             SEUROutgoingParcelsSensor(coordinator, entry),
             SEUROutgoingDeliveredParcelsSensor(coordinator, entry),
             SEURAwaitingPickupSensor(coordinator, entry),
+            SEUREnRouteToPickupPointSensor(coordinator, entry),
         ]
     )
     entities.extend(
@@ -275,6 +278,26 @@ class SEURAwaitingPickupSensor(CoordinatorEntity[SEURCoordinator], SensorEntity)
         return {"parcels": self._get_pickup_parcels()}
 
 
+class SEUREnRouteToPickupPointSensor(SEURAwaitingPickupSensor):
+    """Active incoming parcels destined for, but not yet at, a pickup point."""
+
+    _attr_translation_key = "en_route_to_pickup_point"
+
+    def __init__(self, coordinator: SEURCoordinator, entry: ConfigEntry) -> None:
+        """Initialise the en-route summary."""
+        super().__init__(coordinator, entry)
+        self._attr_unique_id = f"{entry.entry_id}_en_route_to_pickup_point"
+
+    def _get_pickup_parcels(self) -> list[dict]:
+        return [
+            parcel
+            for parcel in self.coordinator.data or []
+            if parcel.get("pickup")
+            and parcel.get("status")
+            not in (ParcelStatus.AT_PICKUP_POINT, ParcelStatus.RETURNING)
+        ]
+
+
 class SEURNextDeliverySensor(CoordinatorEntity[SEURCoordinator], SensorEntity):
     """Earliest expected delivery datetime across all active parcels."""
 
@@ -291,6 +314,7 @@ class SEURNextDeliverySensor(CoordinatorEntity[SEURCoordinator], SensorEntity):
 
     def _delivery_moments(self) -> list[tuple[datetime, dict]]:
         result: list[tuple[datetime, dict]] = []
+        now = dt_util.utcnow()
         for parcel in self.coordinator.data or []:
             moment = parse_iso(parcel.get("planned_from"))
             if moment is None:
@@ -298,6 +322,8 @@ class SEURNextDeliverySensor(CoordinatorEntity[SEURCoordinator], SensorEntity):
                     _LOGGER.debug(
                         "Could not parse delivery moment: %s", parcel["planned_from"]
                     )
+                continue
+            if (parse_iso(parcel.get("planned_to")) or moment) < now:
                 continue
             result.append((moment, parcel))
         return result

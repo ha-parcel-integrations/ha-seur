@@ -7,6 +7,7 @@ from custom_components.seur.const import ParcelStatus
 from custom_components.seur.sensor import (
     SEURAwaitingPickupSensor,
     SEURDeliveredParcelsSensor,
+    SEUREnRouteToPickupPointSensor,
     SEURIncomingParcelsSensor,
     SEURLastUpdateSensor,
     SEURNextDeliverySensor,
@@ -67,12 +68,12 @@ def test_parcel_sensor_missing_barcode():
 def test_next_delivery_picks_earliest():
     coordinator = _coordinator(
         [
-            _parcel("A", planned_from="2026-05-02T10:00:00Z"),
-            _parcel("B", planned_from="2026-05-01T10:00:00Z"),
+            _parcel("A", planned_from="2099-05-02T10:00:00Z"),
+            _parcel("B", planned_from="2099-05-01T10:00:00Z"),
         ]
     )
     sensor = SEURNextDeliverySensor(coordinator, _entry())
-    assert sensor.native_value == datetime(2026, 5, 1, 10, 0, tzinfo=UTC)
+    assert sensor.native_value == datetime(2099, 5, 1, 10, 0, tzinfo=UTC)
     assert sensor.extra_state_attributes["barcode"] == "B"
 
 
@@ -86,7 +87,7 @@ def test_next_delivery_skips_unparseable_moment():
     coordinator = _coordinator(
         [
             _parcel("A", planned_from="not-a-date"),
-            _parcel("B", planned_from="2026-05-01T10:00:00Z"),
+            _parcel("B", planned_from="2099-05-01T10:00:00Z"),
         ]
     )
     sensor = SEURNextDeliverySensor(coordinator, _entry())
@@ -113,6 +114,37 @@ def test_awaiting_pickup_counts_every_parcel_at_pickup_point():
     sensor = SEURAwaitingPickupSensor(coordinator, _entry())
     assert sensor.native_value == 2
     assert len(sensor.extra_state_attributes["parcels"]) == 2
+
+
+def test_en_route_excludes_arrived_returning_and_home_parcels():
+    coordinator = _coordinator(
+        [
+            _parcel("ROUTE", pickup=True),
+            _parcel("READY", status=ParcelStatus.AT_PICKUP_POINT, pickup=True),
+            _parcel("BACK", status=ParcelStatus.RETURNING, pickup=True),
+            _parcel("HOME"),
+        ]
+    )
+    en_route = SEUREnRouteToPickupPointSensor(coordinator, _entry())
+    awaiting = SEURAwaitingPickupSensor(coordinator, _entry())
+    en_route_codes = {p["barcode"] for p in en_route.extra_state_attributes["parcels"]}
+    assert en_route_codes == {"ROUTE"}
+    assert en_route.native_value == 1
+    assert en_route.unique_id.endswith("_en_route_to_pickup_point")
+    assert not en_route_codes & {
+        p["barcode"] for p in awaiting.extra_state_attributes["parcels"]
+    }
+
+
+def test_next_delivery_skips_a_window_that_has_ended():
+    coordinator = _coordinator(
+        [
+            _parcel("OLD", planned_from="2000-01-01T10:00:00Z"),
+            _parcel("NEW", planned_from="2099-01-01T10:00:00Z"),
+        ]
+    )
+    sensor = SEURNextDeliverySensor(coordinator, _entry())
+    assert sensor.extra_state_attributes["barcode"] == "NEW"
 
 
 def test_last_update_sensor():

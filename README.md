@@ -111,7 +111,8 @@ Standard HA removal applies: **Settings → Devices & Services → SEUR → ⋮ 
 | `sensor.seur_incoming_parcels` | Number of active incoming parcels, full list under `parcels` |
 | `sensor.seur_outgoing_parcels` | Number of active outgoing parcels, full list under `parcels` |
 | `sensor.seur_outgoing_delivered_parcels` | Recently delivered outgoing parcels (see the retention option) |
-| `sensor.seur_awaiting_pickup` | Parcels waiting for you at a pickup point. Stays at 0 for now: SEUR's pickup-point data hasn't been confirmed from a real parcel yet |
+| `sensor.seur_en_route_to_pickup_point` | Incoming parcels on their way to a pickup point that have not arrived yet |
+| `sensor.seur_awaiting_pickup` | Incoming parcels that are ready to collect at a pickup point |
 | `sensor.seur_parcel_<code>` | One per active incoming parcel; state is the canonical status and attributes carry the normalised parcel |
 | `sensor.seur_next_delivery` | Present but empty until SEUR supplies a confirmed delivery time |
 | `sensor.seur_delivered_parcels` | Recently delivered incoming packages (see the retention option) |
