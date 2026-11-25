@@ -11,7 +11,7 @@ import hashlib
 import logging
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -30,6 +30,7 @@ from .const import (
     STAGGER_MINUTES,
     ParcelStatus,
 )
+from .contents import ContentsStore, normalize_code
 from .parcels import apply_delivered_filter, normalize_parcel, sort_parcels_by_ts
 
 _LOGGER = logging.getLogger(__name__)
@@ -134,6 +135,8 @@ class SEURCoordinator(DataUpdateCoordinator[list[dict]]):
             update_interval=timedelta(minutes=HOT_INTERVAL_MINUTES),
         )
         self._client = client
+        self.contents_store = ContentsStore(hass, entry.entry_id)
+        self._known_codes: set[str] = set()
         self.delivered: list[dict] = []
         self.outgoing: list[dict] = []
         self.delivered_outgoing: list[dict] = []
@@ -157,6 +160,36 @@ class SEURCoordinator(DataUpdateCoordinator[list[dict]]):
         self._cached_device_id: str | None = None
         # Timestamp of the last successful poll (diagnostic sensor).
         self.last_success_time: datetime | None = None
+
+    @property
+    def known_codes(self) -> set[str]:
+        """Normalised codes of every parcel the last poll listed, both directions."""
+        return self._known_codes
+
+    def _apply_contents(self, parcel: dict) -> dict:
+        """Put the user's own contents text over the carrier's, when there is one."""
+        barcode = parcel.get("barcode")
+        user_value = self.contents_store.get(barcode) if barcode else None
+        if user_value is not None:
+            parcel["contents"] = user_value
+        return parcel
+
+    def _normalize(self, raw: dict, *, include_history: bool) -> dict | None:
+        parcel = normalize_parcel(raw, include_history=include_history)
+        return self._apply_contents(parcel) if parcel else None
+
+    @callback
+    def async_reapply_contents(self) -> None:
+        """Show a changed contents value without polling the carrier again."""
+        for parcel in [
+            *(self.data or []),
+            *self.delivered,
+            *self.outgoing,
+            *self.delivered_outgoing,
+        ]:
+            parcel["contents"] = None
+            self._apply_contents(parcel)
+        self.async_update_listeners()
 
     @property
     def current_tier_minutes(self) -> int | None:
@@ -233,13 +266,18 @@ class SEURCoordinator(DataUpdateCoordinator[list[dict]]):
         incoming = [
             parcel
             for raw in envelope["incoming"]
-            if (parcel := normalize_parcel(raw, include_history=include_history))
+            if (parcel := self._normalize(raw, include_history=include_history))
         ]
         outgoing = [
             parcel
             for raw in envelope["outgoing"]
-            if (parcel := normalize_parcel(raw, include_history=include_history))
+            if (parcel := self._normalize(raw, include_history=include_history))
         ]
+        self._known_codes = {
+            normalize_code(parcel["barcode"])
+            for parcel in [*incoming, *outgoing]
+            if parcel.get("barcode")
+        }
         active = [parcel for parcel in incoming if not parcel["delivered"]]
         delivered = [parcel for parcel in incoming if parcel["delivered"]]
         outgoing_active = [parcel for parcel in outgoing if not parcel["delivered"]]

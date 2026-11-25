@@ -294,6 +294,7 @@ def normalize_parcel(
         "barcode": barcode,
         "sender": _party_name(raw.get("remitente")),
         "receiver": _party_name(raw.get("destinatario")),
+        "contents": None,
         "status": status,
         "raw_status": code,
         "delivered": delivered,

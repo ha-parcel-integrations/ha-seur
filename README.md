@@ -20,6 +20,7 @@ A custom Home Assistant integration that tracks parcels from your [SEUR](https:/
 - [Options](#options)
 - [Removal](#removal)
 - [Sensors](#sensors)
+- [Actions](#actions)
 - [Parcel status reference](#parcel-status-reference)
 - [Events](#events)
 - [Examples](#examples)
@@ -37,6 +38,7 @@ A custom Home Assistant integration that tracks parcels from your [SEUR](https:/
 - Summary sensors for incoming parcels, outgoing parcels, delivered incoming parcels and delivered outgoing parcels
 - Events + device triggers for incoming parcel registration/status/delivery and outgoing status/delivery changes
 - Opt-in per-parcel status history
+- Optional contents text per parcel, set with `seur.update_contents`
 - Manual refresh button and a diagnostic last-update sensor
 
 ## Requirements
@@ -120,6 +122,14 @@ Standard HA removal applies: **Settings → Devices & Services → SEUR → ⋮ 
 | `sensor.seur_last_successful_update` | Diagnostic: when SEUR was last polled successfully |
 
 A delivered incoming parcel moves from its per-parcel sensor to the delivered summary automatically. Outgoing parcels are represented by summary sensors only.
+
+## Actions
+
+| Action | Fields | Description |
+|---|---|---|
+| `seur.update_contents` | `tracking_code`, `contents`, `config_entry_id` (optional) | Set what is in a parcel; an empty `contents` clears it. It goes to every entry that lists the code; name one with `config_entry_id` (needed for a code none lists yet). |
+
+The `contents` text you set titles the parcel's calendar event and shows on the next-delivery sensor.
 
 ## Parcel status reference
 

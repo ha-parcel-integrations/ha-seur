@@ -122,3 +122,12 @@ def test_whole_day_window_is_an_all_day_event():
     assert event.all_day
     assert event.start == date(2099, 1, 1)
     assert event.end == date(2099, 1, 2)
+
+
+def test_event_title_prefers_contents_then_sender():
+    with_contents = {**_parcel("A", planned_from="2099-01-01T10:00:00Z")}
+    with_contents["contents"] = "Running shoes"
+    assert _cal([with_contents]).event.summary == "Running shoes"
+    no_sender = _parcel("B", planned_from="2099-01-01T10:00:00Z")
+    no_sender["sender"] = None
+    assert _cal([no_sender]).event.summary == "Parcel B"

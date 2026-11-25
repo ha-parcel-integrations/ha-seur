@@ -6,15 +6,17 @@ from dataclasses import dataclass
 import logging
 
 import aiohttp
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import SEURApiClient, SEURApiError, SEURAuthError
-from .const import PLATFORMS
+from .const import DOMAIN, PLATFORMS
+from .contents import ContentsStore
 from .coordinator import SEURCoordinator
+from .services import async_setup_services, async_unload_services
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -56,6 +58,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SEURConfigEntry) -> bool
         raise ConfigEntryNotReady(f"SEUR login failed: {err}") from err
 
     coordinator = SEURCoordinator(hass, client, entry)
+    await coordinator.contents_store.async_load()
 
     try:
         # Fetch initial data here, before forwarding to platforms. Raising
@@ -79,6 +82,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: SEURConfigEntry) -> bool
         await session.close()
         raise
 
+    async_setup_services(hass)
+
     # No entry.add_update_listener: the options flow is an
     # OptionsFlowWithReload, which may not be combined with one.
     return True
@@ -88,5 +93,16 @@ async def async_unload_entry(hass: HomeAssistant, entry: SEURConfigEntry) -> boo
     """Unload a SEUR config entry."""
     if await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         await entry.runtime_data.session.close()
+        # The service stays while any other entry is still loaded.
+        if not any(
+            other.entry_id != entry.entry_id and other.state is ConfigEntryState.LOADED
+            for other in hass.config_entries.async_entries(DOMAIN)
+        ):
+            async_unload_services(hass)
         return True
     return False
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: SEURConfigEntry) -> None:
+    """Delete the contents the user set for the removed entry."""
+    await ContentsStore(hass, entry.entry_id).async_remove()
